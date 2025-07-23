@@ -5,7 +5,7 @@ namespace GameStore.Endpoints;
 
 public static class GamesEndpoints
 {
-    private static string GetGamesEndpoint = "GetGame";
+    private static string getGamesEndpoint = "GetGame";
 
     public static readonly List<GameDTO> games = [    new GameDTO(1, "Elden Ring", "RPG", 299.99m, new DateOnly(2022, 2, 25)),
     new GameDTO(2, "Hades", "Roguelike", 99.99m, new DateOnly(2020, 9, 17)),
@@ -22,7 +22,28 @@ public static class GamesEndpoints
                 return Results.NotFound();
            }
            return Results.Ok(games);
+        }).WithName(getGamesEndpoint);
+
+        gm.MapPost("/", (CreateGameDTO game)=>{
+            games.Add(new GameDTO(
+                games[games.Count - 1].Id,
+                game.Name,
+                game.Genre,
+                game.Price,
+                game.Date
+
+
+            ));
+
+            return Results.Created();
         });
+        gm.MapDelete("/{id}", (int id)=>{
+            // GameDTO game = how to use WithName to get the game and delet finding the index?
+        });
+
+
         return app;
     }
 }
+// How to create requirementes (ex: date need to be before future?)
+// Am I forgotting something?
