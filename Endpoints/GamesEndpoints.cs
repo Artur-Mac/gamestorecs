@@ -11,7 +11,7 @@ public static class GamesEndpoints
     new GameDTO(2, "Hades", "Roguelike", 99.99m, new DateOnly(2020, 9, 17)),
     new GameDTO(3, "Celeste", "Platformer", 49.99m, new DateOnly(2018, 1, 25))
     ];
-    public static WebApplication MapGamesEndpoints(this WebApplication app) {
+    public static RouteGroupBuilder MapGamesEndpoints(this WebApplication app) {
         var gm = app.MapGroup("/games");
         
         gm.MapGet("/{id?}", (int? id) =>{
@@ -19,30 +19,55 @@ public static class GamesEndpoints
             return Results.Ok(games);
            }
            if (games.Find(game => game.Id == id) == null){
-                return Results.NotFound();
+                return Results.NotFound("passou aqui");
            }
+           else if ()
            return Results.Ok(games);
         }).WithName(getGamesEndpoint);
 
         gm.MapPost("/", (CreateGameDTO game)=>{
-            games.Add(new GameDTO(
-                games[games.Count - 1].Id,
+            GameDTO newGame = new(
+                games[^1].Id,
                 game.Name,
                 game.Genre,
                 game.Price,
                 game.Date
+            );
 
+            games.Add(newGame);
 
-            ));
-
-            return Results.Created();
-        });
-        gm.MapDelete("/{id}", (int id)=>{
-            // GameDTO game = how to use WithName to get the game and delet finding the index?
+            return Results.CreatedAtRoute(getGamesEndpoint, new { id = newGame.Id }, game);
         });
 
+        gm.MapPut("/{id}", (int id, UpdateGameDTO game)=>
+        {
+            int idGame = games.FindIndex(g => g.Id == id);
 
-        return app;
+            if (idGame == -1)
+            {
+                return Results.NotFound();
+            }
+
+            games[idGame] = new(id, game.Name, game.Genre, game.Price, game.Date);
+
+            return Results.NoContent();
+            
+        });
+
+        gm.MapDelete("/{id}", (int id)=>
+        {
+            GameDTO? game = games.Find(game => game.Id == id);
+            if (game == null)
+            {
+                return Results.NotFound();
+            }
+
+            games.Remove(game);
+            return Results.NoContent();
+        });
+
+
+        return gm;
     }
 }
 // How to create requirementes (ex: date need to be before future?)

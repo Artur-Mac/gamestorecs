@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "iH4vwOYlbzM=",
+  "dgSpecHash": "9njJPhrcGiA=",
   "success": true,
-  "projectFilePath": "C:\\Users\\Artur\\Documents\\learningc#\\GameStore\\GameStore.csproj",
+  "projectFilePath": "C:\\Users\\Artur\\Documents\\Artur\\000000000\\projetogamestore\\gamestorecs\\GameStore.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\Artur\\.nuget\\packages\\microsoft.openapi\\1.4.3\\microsoft.openapi.1.4.3.nupkg.sha512",
     "C:\\Users\\Artur\\.nuget\\packages\\minimalapis.extensions\\0.11.0\\minimalapis.extensions.0.11.0.nupkg.sha512",

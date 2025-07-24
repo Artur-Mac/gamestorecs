@@ -1,4 +1,22 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace GameStore.DTOS;
 
 
-public record class CreateGameDTO( string Name, string Genre, decimal Price, DateOnly Date);
+public record class CreateGameDTO(
+[Required] string Name,
+[Required] string Genre,
+[Required] decimal Price,
+[Required]DateOnly Date
+) : IValidatableObject
+{
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        DateOnly atual = DateOnly.FromDateTime(DateTime.Now);
+
+        if (Date > atual)
+        {
+            yield return new ValidationResult($"The date is on future. Its need to be before {atual}", [nameof(Date)]);
+        }
+    }
+}
