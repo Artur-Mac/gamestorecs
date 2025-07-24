@@ -12,22 +12,24 @@ public static class GamesEndpoints
     new GameDTO(3, "Celeste", "Platformer", 49.99m, new DateOnly(2018, 1, 25))
     ];
     public static RouteGroupBuilder MapGamesEndpoints(this WebApplication app) {
-        var gm = app.MapGroup("/games");
+        var gm = app.MapGroup("/games")
+        .WithParameterValidation();
         
         gm.MapGet("/{id?}", (int? id) =>{
            if (id == null){
             return Results.Ok(games);
            }
-           if (games.Find(game => game.Id == id) == null){
+           GameDTO? gameGet = games.Find(game => game.Id == id);
+           if ( gameGet== null){
                 return Results.NotFound("passou aqui");
            }
-           else if ()
-           return Results.Ok(games);
+           
+           return Results.Ok(gameGet);
         }).WithName(getGamesEndpoint);
 
         gm.MapPost("/", (CreateGameDTO game)=>{
             GameDTO newGame = new(
-                games[^1].Id,
+                games[^1].Id + 1,
                 game.Name,
                 game.Genre,
                 game.Price,
@@ -38,6 +40,7 @@ public static class GamesEndpoints
 
             return Results.CreatedAtRoute(getGamesEndpoint, new { id = newGame.Id }, game);
         });
+        
 
         gm.MapPut("/{id}", (int id, UpdateGameDTO game)=>
         {
