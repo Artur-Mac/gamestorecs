@@ -2,10 +2,23 @@ using GameStore.Datas;
 using GameStore.Endpoints;
 
 var builder = WebApplication.CreateBuilder(args);
-var app = builder.Build();
 
-string connString = "Db Source=GameStoreContext.db";
+
+string connString = builder.Configuration.GetConnectionString("AppSettingsDbContext");
+
 builder.Services.AddSqlite<GameStoreContext>(connString);
 
+var app = builder.Build();
 app.MapGamesEndpoints();
+
+
 app.Run();
+
+
+/*
+-connection string
+
+-download dependencies
+
+-update "schema" every new update
+*/
