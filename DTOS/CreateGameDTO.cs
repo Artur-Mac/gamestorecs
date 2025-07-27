@@ -5,7 +5,7 @@ namespace GameStore.DTOS;
 
 public record class CreateGameDTO(
 [Required] string Name,
-[Required] string Genre,
+[Required] int GenreId,
 [Required] decimal Price,
 [Required]DateOnly Date
 ) : IValidatableObject
