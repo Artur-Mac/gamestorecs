@@ -17,13 +17,13 @@ public static class GamesEndpoints
         var gm = app.MapGroup("/games")
         .WithParameterValidation();
         
-        gm.MapGet("/{id?}", (int? id) =>{
+        gm.MapGet("/{id?}", (int? id, GameStoreContext DbContext) =>{
            if (id == null){
-            return Results.Ok(games);
+            return Results.Ok(DbContext.Games);
            }
-           GameDTO? gameGet = games.Find(game => game.Id == id);
+           Game? gameGet = DbContext.Games.Find(id);
            if ( gameGet== null){
-                return Results.NotFound("passou aqui");
+                return Results.NotFound("Game Not Found -> input a valid ID");
            }
            
            return Results.Ok(gameGet);
@@ -42,8 +42,17 @@ public static class GamesEndpoints
             };
 
             DbContext.Games.Add(newGame);
+            DbContext.SaveChanges();
 
-            return Results.CreatedAtRoute(getGamesEndpoint, new { id = newGame.Id }, game);
+            GameDTO gameDTO = new(
+                newGame.Id,
+                newGame.Name,
+                newGame.Genre!.Name,
+                newGame.Price,
+                newGame.Date
+            );
+
+            return Results.CreatedAtRoute(getGamesEndpoint, new { id = newGame.Id }, gameDTO);
         });
         
 
