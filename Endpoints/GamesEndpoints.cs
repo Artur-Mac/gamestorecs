@@ -31,28 +31,16 @@ public static class GamesEndpoints
 
 
         gm.MapPost("/", (CreateGameDTO game, GameStoreContext DbContext)=>{
-            Game newGame = new()
-            {
-                Name = game.Name,
-                Genre = DbContext.Genres.Find(game.GenreId),
-                GenreId = game.GenreId,
-                Price = game.Price,
-                Date = game.Date
-
-            };
+            Game newGame = game.ToGame();
+            newGame.Genre = DbContext.Genres.Find(game.GenreId);
 
             DbContext.Games.Add(newGame);
             DbContext.SaveChanges();
 
-            GameDTO gameDTO = new(
-                newGame.Id,
-                newGame.Name,
-                newGame.Genre!.Name,
-                newGame.Price,
-                newGame.Date
-            );
-
-            return Results.CreatedAtRoute(getGamesEndpoint, new { id = newGame.Id }, gameDTO);
+        
+            return Results.CreatedAtRoute(getGamesEndpoint,
+            new { id = newGame.Id },
+            newGame.ToDTO());
         });
         
 
