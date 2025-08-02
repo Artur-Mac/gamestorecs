@@ -2,72 +2,74 @@ using System;
 using GameStore.Datas;
 using GameStore.DTOS;
 using GameStore.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace GameStore.Endpoints;
 
 public static class GamesEndpoints
 {
-    private static string getGamesEndpoint = "GetGame";
+    private static readonly string getGamesEndpoint = "GetGame";
 
-    public static readonly List<GameDTO> games = [    new GameDTO(1, "Elden Ring", "RPG", 299.99m, new DateOnly(2022, 2, 25)),
-    new GameDTO(2, "Hades", "Roguelike", 99.99m, new DateOnly(2020, 9, 17)),
-    new GameDTO(3, "Celeste", "Platformer", 49.99m, new DateOnly(2018, 1, 25))
-    ];
     public static RouteGroupBuilder MapGamesEndpoints(this WebApplication app) {
         var gm = app.MapGroup("/games")
         .WithParameterValidation();
         
-        gm.MapGet("/{id?}", (int? id, GameStoreContext DbContext) =>{
-           if (id == null){
-            return Results.Ok(DbContext.Games);
+        gm.MapGet("/{id?}",  async (int? id, GameStoreContext DbContext) =>{
+           if (id is null){
+                List<GameSummaryDTO> games = await DbContext.Games
+                   .Include(game => game.Genre)
+                   .Select(game => game.ToGameSummaryDTO())
+                   .AsNoTracking()
+                   .ToListAsync();
+
+             return Results.Ok(games);
            }
-           Game? gameGet = DbContext.Games.Find(id);
-           if ( gameGet== null){
-                return Results.NotFound("Game Not Found -> input a valid ID");
-           }
+
+           Game? gameGet = await DbContext.Games.FindAsync(id);
            
-           return Results.Ok(gameGet);
+           if (gameGet == null)
+            {
+                return Results.NotFound("Game Not Found -> input a valid ID");
+            }
+           
+           return Results.Ok(gameGet.ToGameDetailsDTO());
         }).WithName(getGamesEndpoint);
 
 
-        gm.MapPost("/", (CreateGameDTO game, GameStoreContext DbContext)=>{
+        gm.MapPost("/", async (CreateGameDTO game, GameStoreContext DbContext)=>{
             Game newGame = game.ToGame();
-            newGame.Genre = DbContext.Genres.Find(game.GenreId);
 
-            DbContext.Games.Add(newGame);
-            DbContext.SaveChanges();
+            await DbContext.Games.AddAsync(newGame);
+            await DbContext.SaveChangesAsync();
 
         
             return Results.CreatedAtRoute(getGamesEndpoint,
             new { id = newGame.Id },
-            newGame.ToDTO());
+            newGame.ToGameDetailsDTO());
         });
         
 
-        gm.MapPut("/{id}", (int id, UpdateGameDTO game)=>
+        gm.MapPut("/{id}", async (int id, UpdateGameDTO game, GameStoreContext DbContext)=>
         {
-            int idGame = games.FindIndex(g => g.Id == id);
+            Game? exsitingGame = await DbContext.Games.FindAsync(id);
 
-            if (idGame == -1)
+            if (exsitingGame == null)
             {
                 return Results.NotFound();
             }
-
-            games[idGame] = new(id, game.Name, game.Genre, game.Price, game.Date);
+            
+            DbContext.Entry(exsitingGame).CurrentValues.SetValues(game.ToGame(id));
+            await DbContext.SaveChangesAsync();
 
             return Results.NoContent();
             
         });
 
-        gm.MapDelete("/{id}", (int id)=>
+        gm.MapDelete("/{id}",async (int id, GameStoreContext DbContext)=>
         {
-            GameDTO? game = games.Find(game => game.Id == id);
-            if (game == null)
-            {
-                return Results.NotFound();
-            }
+            await DbContext.Games.Where(game => game.Id == id).ExecuteDeleteAsync();
 
-            games.Remove(game);
+            await DbContext.SaveChangesAsync();
             return Results.NoContent();
         });
 
@@ -75,5 +77,11 @@ public static class GamesEndpoints
         return gm;
     }
 }
-// How to create requirementes (ex: date need to be before future?)
-// Am I forgotting something?
+/*
+Things to do:
+-Atualize sumary and details
+-atualize updatedto
+-entity to dto
+
+
+*/

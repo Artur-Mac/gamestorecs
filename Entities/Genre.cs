@@ -8,4 +8,5 @@ public class Genre
     public required string Name {get; set;}
 
     public List<Game> Games = [];
+
 }

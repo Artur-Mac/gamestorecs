@@ -1,14 +1,15 @@
 using System;
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 
 namespace GameStore.Datas;
 
 public static class DataExtensions
 {
-    public static void MigrateDb(this WebApplication app)
+    public static async Task MigrateDbAsync(this WebApplication app)
     {
-        var scope = app.Services.CreateScope();
+        using var scope = app.Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<GameStoreContext>();
-        dbContext.Database.Migrate();
+        await dbContext.Database.MigrateAsync();
     }
 }

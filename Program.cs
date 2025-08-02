@@ -16,8 +16,9 @@ if (string.IsNullOrEmpty(connString))
 builder.Services.AddSqlite<GameStoreContext>(connString);
 
 var app = builder.Build();
-app.MigrateDb();
+await app.MigrateDbAsync();
 app.MapGamesEndpoints();
+app.MapGenreEndpoints();
 
 app.Run();
 
